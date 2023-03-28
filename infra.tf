@@ -119,10 +119,23 @@ resource "aws_lb_target_group" "demo_target_group" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
-  # Attach load balancer to target group
-  load_balancers     = [aws_lb.demo_lb.arn]
-}
 
+}
+# Attach the target group to the load balancer
+resource "aws_lb_listener_rule" "demo_listener_rule" {
+  listener_arn = aws_lb.demo_lb.arn
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.demo_target_group.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/"]
+    }
+  }
+}
 
 resource "aws_iam_policy" "ecs_policy" {
   name        = "ecs_policy"
