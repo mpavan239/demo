@@ -53,7 +53,7 @@ resource "aws_lb" "demo_lb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.demo_sg.id]
-  subnets            = [aws_subnet.demo_sub_pub.id, subnet-0fba0d3acb7e5d3d5]
+  subnets            = [subnet-03c69c358cee3d747, subnet-0fba0d3acb7e5d3d5]
 
   tags = {
     Name = "demo-lb"
