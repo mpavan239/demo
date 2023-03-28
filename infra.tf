@@ -158,28 +158,6 @@ resource "aws_ecs_cluster" "demo_cluster" {
   }
 }
 
-# Create an IAM role for ECS task execution
-resource "aws_iam_role" "ecs_role" {
-  name = "ecs-task-execution-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  # Attach ECS policy to IAM role
-  policy = aws_iam_policy.ecs_policy.arn
-}
-
-
 # Create an ECS task definition for the application
 resource "aws_ecs_task_definition" "demo_task_definition" {
   family                   = "demo-task-definition"
@@ -216,7 +194,7 @@ resource "aws_ecs_service" "demo_service" {
 
   network_configuration {
     security_groups = [aws_security_group.demo_sg.id]
-    subnets         = aws_subnet.demo_sub*.id
+    subnets         = [aws_subnet.demo_sub_pvt.id, aws_subnet.demo_sub_pub.id]
     assign_public_ip = true
   }
 
