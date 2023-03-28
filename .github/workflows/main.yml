@@ -29,7 +29,6 @@ jobs:
         run: sudo docker build -t $ECR_REGISTRY_URI:${{ github.sha }} .
       - name: Push Docker image to ECR
         run: |
-          aws configure
           aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY_URI
           sudo docker push $ECR_REGISTRY_URI:${{ github.sha }}
       - name: Create Infra
