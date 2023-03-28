@@ -53,7 +53,7 @@ resource "aws_lb" "demo_lb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.demo_sg.id]
-  subnets            = [aws_subnet.demo_sub_pvt.id, aws_subnet.demo_sub_pub.id]
+  subnets            = [aws_subnet.demo_sub_pub.id]
 
   tags = {
     Name = "demo-lb"
@@ -65,7 +65,7 @@ resource "aws_lb_target_group" "demo_target_group" {
   name        = "demo-target-group"
   port        = 80
   protocol    = "HTTP"
-  target_type = "ip"
+  target_type = "vpc_ip"
 
   health_check {
     path     = "/"
@@ -139,6 +139,10 @@ resource "aws_iam_role_policy_attachment" "ecs_policy_attachment" {
 resource "aws_ecs_cluster" "demo_cluster" {
   name = "demo-cluster"
 
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
   # Attach IAM role to ECS cluster
   setting {
     name  = "task_execution_role"
@@ -157,7 +161,7 @@ resource "aws_ecs_task_definition" "demo_task_definition" {
     portMappings = [
       {
         containerPort       = 3000
-        hostPort            = 3001
+        hostPort            = 3000
         protocol            = "tcp"
       }
     ]
