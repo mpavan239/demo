@@ -108,7 +108,7 @@ resource "aws_lb_target_group" "demo_target_group" {
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.demo_vpc.id
-  target_type = "instance"
+  target_type = "ip"
 
   health_check {
     path     = "/"
@@ -120,6 +120,12 @@ resource "aws_lb_target_group" "demo_target_group" {
     unhealthy_threshold = 2
   }
 }
+resource "aws_lb_target_group_attachment" "demo_tg_attachment" {
+  target_group_arn = aws_lb_target_group.demo_target_group.arn
+  target_id        = aws_instance.demo_ecs_container.private_ip  # Change instance id to private IP
+  port             = 80
+}
+
 
 resource "aws_iam_policy" "ecs_policy" {
   name        = "ecs_policy"
@@ -230,7 +236,7 @@ resource "aws_ecs_task_definition" "demo_task_definition" {
   cpu                      = 256
   memory                   = 512
   requires_compatibilities = ["FARGATE"]
-  network_mode             = "bridge"
+  network_mode             = "vpc"
   task_role_arn            = aws_iam_role.ecs_role.arn
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 }
@@ -258,5 +264,6 @@ resource "aws_ecs_service" "demo_service" {
     target_group_arn = aws_lb_target_group.demo_target_group.arn
     container_name   = "demo-app"
     container_port   = 3000
+    target_type      = "ip"
   }
 }
