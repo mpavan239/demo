@@ -147,22 +147,6 @@ resource "aws_iam_role_policy_attachment" "ecs_policy_attachment" {
   policy_arn = aws_iam_policy.ecs_policy.arn
   role       = aws_iam_role.ecs_role.name
 }
-
-# Create an ECS cluster
-resource "aws_ecs_cluster" "demo_cluster" {
-  name = "demo-cluster"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-  # Attach IAM role to ECS cluster
-  setting {
-    name  = "task_execution_role"
-    value = aws_iam_role.ecs_role.arn
-  }
-}
-
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "ecs_task_execution_role"
 
@@ -179,6 +163,22 @@ resource "aws_iam_role" "ecs_task_execution_role" {
     ]
   })
 }
+
+# Create an ECS cluster
+resource "aws_ecs_cluster" "demo_cluster" {
+  name = "demo-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+  # Attach IAM role to ECS cluster
+  setting {
+    name  = "ecs_task_execution_role"
+    value = aws_iam_role.ecs_role.arn
+  }
+}
+
 
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
