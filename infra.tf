@@ -76,63 +76,47 @@ resource "aws_lb_target_group" "demo_target_group" {
   }
 }
 
-# Create the IAM policy
 resource "aws_iam_policy" "ecs_policy" {
   name        = "ecs_policy"
-  description = "IAM policy for ECS task execution role"
-
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:logs:*:*:*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
           "ecr:GetDownloadUrlForLayer",
-          "ecr:GetRepositoryPolicy",
-          "ecr:DescribeRepositories",
-          "ecr:ListImages",
-          "ecr:DescribeImages",
-          "ecr:BatchGetImage"
+          "ecr:BatchGetImage",
+          "ecr:BatchCheckLayerAvailability"
         ]
+        Effect   = "Allow"
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Action = [
           "ecs:CreateCluster",
           "ecs:DeregisterContainerInstance",
           "ecs:DiscoverPollEndpoint",
           "ecs:Poll",
           "ecs:RegisterContainerInstance",
-          "ecs:StartTask",
-          "ecs:SubmitContainerStateChange",
-          "ecs:SubmitTaskStateChange"
+          "ecs:StartTelemetrySession",
+          "ecs:Submit*",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
         ]
+        Effect   = "Allow"
         Resource = "*"
-      }
+      },
     ]
   })
 }
-# Create the IAM role for ECS task execution
+
 resource "aws_iam_role" "ecs_role" {
-  name = "ecs_role"
+  name               = "ecs_role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
         Principal = {
           Service = "ecs-tasks.amazonaws.com"
         }
@@ -140,12 +124,14 @@ resource "aws_iam_role" "ecs_role" {
     ]
   })
 
-  # Attach the IAM policy to the role
-  # Note that we pass the ARN of the IAM policy to the "policy_arn" attribute, not "policy"
-  # Also note that we use "depends_on" to ensure the IAM policy is created before the role
-  depends_on = [aws_iam_policy.ecs_policy]
-  policy_arn = aws_iam_policy.ecs_policy.arn
+  tags = {
+    Name = "ecs_role"
+  }
+
+  # Attach policy to the role
+  policy = aws_iam_policy.ecs_policy.arn
 }
+
 
 # Create an ECS cluster
 resource "aws_ecs_cluster" "demo_cluster" {
