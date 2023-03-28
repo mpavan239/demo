@@ -119,6 +119,8 @@ resource "aws_lb_target_group" "demo_target_group" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
+  # Attach load balancer to target group
+  load_balancers     = [aws_lb.demo_lb.arn]
 }
 
 
