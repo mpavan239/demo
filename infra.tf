@@ -16,6 +16,7 @@ resource "aws_subnet" "demo_sub_pvt" {
 resource "aws_subnet" "demo_sub_pub" {
   vpc_id     = aws_vpc.demo_vpc.id
   cidr_block = "10.0.0.0/24"
+  availability_zone = "ap-south-1b"
   tags = {
     Name = "public-subnet"
   }
@@ -23,13 +24,21 @@ resource "aws_subnet" "demo_sub_pub" {
 resource "aws_subnet" "demo_sub_pub2" {
   vpc_id            = aws_vpc.demo_vpc.id
   cidr_block        = "10.0.2.0/24"
-  availability_zone = "ap-south-1c"
+  availability_zone = "ap-south-1a"
   map_public_ip_on_launch = true
   tags = {
     Name = "public-subnet2"
   }
 }
-
+resource "aws_subnet" "demo_sub_pub2" {
+  vpc_id            = aws_vpc.demo_vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "ap-south-1c"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "public-subnet3"
+  }
+}
 
 # Create a security group
 resource "aws_security_group" "demo_sg" {
