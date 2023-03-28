@@ -4,7 +4,6 @@ resource "aws_ecs_service" "demo_service" {
   cluster         = demo-cluster
   task_definition = "arn:aws:ecs:ap-south-1:634441478571:task-definition/demo-task-definition:6\n"
   desired_count   = 1
-  ...
 
   deployment_controller {
     type = "ECS"
