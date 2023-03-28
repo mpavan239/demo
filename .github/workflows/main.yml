@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - master
-env:
-ECR_REGISTRY_URI: ""634441478571.dkr.ecr.ap-south-1.amazonaws.com/demo-app"
+env:ECR_REGISTRY_URI: ""634441478571.dkr.ecr.ap-south-1.amazonaws.com/demo-app"
 
 jobs:
   build:
