@@ -20,6 +20,16 @@ resource "aws_subnet" "demo_sub_pub" {
     Name = "public-subnet"
   }
 }
+resource "aws_subnet" "demo_sub_pub2" {
+  vpc_id            = aws_vpc.demo_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "ap-south-1c"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "public-subnet2"
+  }
+}
+
 
 # Create a security group
 resource "aws_security_group" "demo_sg" {
@@ -53,7 +63,7 @@ resource "aws_lb" "demo_lb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.demo_sg.id]
-  subnets            = [subnet-03c69c358cee3d747, subnet-0fba0d3acb7e5d3d5]
+  subnets            = [aws_subnet.demo_sub_pub.id, aws_subnet.demo_sub_pub2.id]
 
   tags = {
     Name = "demo-lb"
