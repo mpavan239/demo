@@ -16,7 +16,7 @@ resource "aws_subnet" "demo_sub_pvt" {
 resource "aws_subnet" "demo_sub_pub" {
   vpc_id     = aws_vpc.demo_vpc.id
   cidr_block = "10.0.0.0/24"
-  availability_zone = "ap-south-1b"
+  availability_zone = "ap-south-1a"
   tags = {
     Name = "public-subnet"
   }
@@ -24,21 +24,13 @@ resource "aws_subnet" "demo_sub_pub" {
 resource "aws_subnet" "demo_sub_pub2" {
   vpc_id            = aws_vpc.demo_vpc.id
   cidr_block        = "10.0.2.0/24"
-  availability_zone = "ap-south-1a"
+  availability_zone = "ap-south-1b"
   map_public_ip_on_launch = true
   tags = {
     Name = "public-subnet2"
   }
 }
-resource "aws_subnet" "demo_sub_pub3" {
-  vpc_id            = aws_vpc.demo_vpc.id
-  cidr_block        = "10.0.3.0/24"
-  availability_zone = "ap-south-1c"
-  map_public_ip_on_launch = true
-  tags = {
-    Name = "public-subnet3"
-  }
-}
+
 
 # Create a security group
 resource "aws_security_group" "demo_sg" {
@@ -65,6 +57,37 @@ resource "aws_security_group" "demo_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+resource "aws_internet_gateway" "demo_igw" {
+  vpc_id = aws_vpc.demo_vpc.id
+
+  tags = {
+    Name = "demo-igw"
+  }
+}
+
+resource "aws_route_table" "demo_public_rt" {
+  vpc_id = aws_vpc.demo_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.demo_igw.id
+  }
+
+  tags = {
+    Name = "demo-public-rt"
+  }
+}
+
+resource "aws_route_table_association" "demo_public_subnet_a_rt" {
+  subnet_id      = aws_subnet.demo_sub_pub..id
+  route_table_id = aws_route_table.demo_public_rt.id
+}
+
+resource "aws_route_table_association" "demo_public_subnet_b_rt" {
+  subnet_id      = aws_subnet.demo_sub_pub2.id
+  route_table_id = aws_route_table.demo_public_rt.id
+}
+
 
 # Create an Elastic Load Balancer (ELB)
 resource "aws_lb" "demo_lb" {
@@ -150,7 +173,6 @@ resource "aws_iam_role" "ecs_role" {
     Name = "ecs_role"
   }
 
-
 }
 resource "aws_iam_role_policy_attachment" "ecs_policy_attachment" {
   policy_arn = aws_iam_policy.ecs_policy.arn
@@ -173,6 +195,12 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 }
 
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  role       = aws_iam_role.ecs_task_execution_role.name
+}
+
 # Create an ECS cluster
 resource "aws_ecs_cluster" "demo_cluster" {
   name = "demo-cluster"
@@ -181,19 +209,9 @@ resource "aws_ecs_cluster" "demo_cluster" {
     name  = "containerInsights"
     value = "enabled"
   }
-  # Attach IAM role to ECS cluster
-  setting {
-    name  = "ecs_task_execution_role"
-    value = aws_iam_role.ecs_role.arn
-  }
 }
 
-
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_attachment" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.ecs_task_execution_role.name
-}
-
+# Create an ECS task definition for the application
 resource "aws_ecs_task_definition" "demo_task_definition" {
   family                   = "demo-task-definition"
   container_definitions    = jsonencode([{
@@ -213,8 +231,7 @@ resource "aws_ecs_task_definition" "demo_task_definition" {
   memory                   = 512
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_execution_role_arn  = aws_iam_role.ecs_role.arn
 }
 
 
