@@ -79,7 +79,7 @@ resource "aws_route_table" "demo_public_rt" {
 }
 
 resource "aws_route_table_association" "demo_public_subnet_a_rt" {
-  subnet_id      = aws_subnet.demo_sub_pub..id
+  subnet_id      = aws_subnet.demo_sub_pub.id
   route_table_id = aws_route_table.demo_public_rt.id
 }
 
