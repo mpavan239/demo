@@ -48,7 +48,4 @@ const [weather,setWeather]=useState('');
     )
 }
 
-// eslint-disable-next-line no-unused-vars
-import APIKey from './config'
-
 export default App
