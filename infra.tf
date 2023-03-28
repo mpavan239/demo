@@ -259,6 +259,5 @@ resource "aws_ecs_service" "demo_service" {
     target_group_arn = aws_lb_target_group.demo_target_group.arn
     container_name   = "demo-app"
     container_port   = 3000
-    target_type      = "ip"
   }
 }
