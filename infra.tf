@@ -65,7 +65,8 @@ resource "aws_lb_target_group" "demo_target_group" {
   name        = "demo-target-group"
   port        = 80
   protocol    = "HTTP"
-  target_type = "vpc_ip"
+  vpc_id      = aws_vpc.demo_vpc.id
+  target_type = "instance"
 
   health_check {
     path     = "/"
@@ -73,6 +74,8 @@ resource "aws_lb_target_group" "demo_target_group" {
     matcher  = "200-299"
     interval = 30
     timeout  = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
   }
 }
 
