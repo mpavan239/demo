@@ -44,8 +44,8 @@ resource "aws_security_group" "demo_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    from_port   = 3001
-    to_port     = 3001
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -119,11 +119,6 @@ resource "aws_lb_target_group" "demo_target_group" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
-}
-resource "aws_lb_target_group_attachment" "demo_tg_attachment" {
-  target_group_arn = aws_lb_target_group.demo_target_group.arn
-  target_id        = aws_instance.demo_ecs_container.private_ip  # Change instance id to private IP
-  port             = 80
 }
 
 
@@ -236,7 +231,7 @@ resource "aws_ecs_task_definition" "demo_task_definition" {
   cpu                      = 256
   memory                   = 512
   requires_compatibilities = ["FARGATE"]
-  network_mode             = "vpc"
+  network_mode             = "awsvpc"
   task_role_arn            = aws_iam_role.ecs_role.arn
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 }
