@@ -1,9 +1,8 @@
-
 # Create an ECS service for the application
 resource "aws_ecs_service" "demo_service" {
   name            = "demo-service"
-  cluster         = aws_ecs_cluster.demo_cluster.id
-  task_definition = aws_ecs_task_definition.demo_task_definition.arn
+  cluster         = demo-cluster
+  task_definition = arn:aws:ecs:ap-south-1:634441478571:task-definition/demo-task-definition:6
   desired_count   = 1
 
   deployment_controller {
@@ -11,13 +10,13 @@ resource "aws_ecs_service" "demo_service" {
   }
 
   network_configuration {
-    security_groups = [aws_security_group.demo_sg.id]
-    subnets         = [aws_subnet.demo_sub_pvt.id]
+    security_groups = [sg-0d1ee26c7d1db2194]
+    subnets         = [subnet-01c2744b9cc6583b3]
     
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.demo_target_group.arn
+    target_group_arn = arn:aws:elasticloadbalancing:ap-south-1:634441478571:targetgroup/demo-target-group/3cc40d16860b5b21
     container_name   = "demo-app"
     container_port   = 3000
   }
