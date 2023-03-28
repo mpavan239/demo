@@ -230,8 +230,9 @@ resource "aws_ecs_task_definition" "demo_task_definition" {
   cpu                      = 256
   memory                   = 512
   requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc"
-  execution_role_arn       = aws_iam_role.ecs_role.arn
+  network_mode             = "bridge"
+  task_role_arn            = aws_iam_role.ecs_role.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 }
 
 
