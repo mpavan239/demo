@@ -30,7 +30,7 @@ resource "aws_subnet" "demo_sub_pub2" {
     Name = "public-subnet2"
   }
 }
-resource "aws_subnet" "demo_sub_pub2" {
+resource "aws_subnet" "demo_sub_pub3" {
   vpc_id            = aws_vpc.demo_vpc.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "ap-south-1c"
