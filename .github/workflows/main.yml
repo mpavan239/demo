@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - master
-env:ECR_REGISTRY_URI: ""634441478571.dkr.ecr.ap-south-1.amazonaws.com/demo-app"
+
+env:
+  ECR_REGISTRY_URI: "634441478571.dkr.ecr.ap-south-1.amazonaws.com/demo-app"
 
 jobs:
   build:
@@ -24,11 +26,13 @@ jobs:
       - name: Build Express app
         run: npm run build
       - name: Push Docker Image to ECR
-        run: sudo docker build -t ${{ env.ECR_REGISTRY_URI }}:${{ github.sha }} .
+        run: sudo docker build -t $ECR_REGISTRY_URI:${{ github.sha }} .
       - name: Push Docker image to ECR
-        run: aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY_URI }} | sudo docker push ${{ env.ECR_REGISTRY_URI }}:${{ github.sha }}
-      - name : create infra
-      - run : |
-            terraform init
-            terraform plan
-            terraform apply
+        run: |
+          aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY_URI
+          sudo docker push $ECR_REGISTRY_URI:${{ github.sha }}
+      - name: Create Infra
+        run: |
+          terraform init
+          terraform plan
+          terraform apply
