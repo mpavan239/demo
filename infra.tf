@@ -18,7 +18,7 @@ resource "aws_ecs_service" "demo_service" {
   }
 
   load_balancer {
-    target_group_arn = arn:aws:elasticloadbalancing:ap-south-1:634441478571:targetgroup/demo-target-group/3cc40d16860b5b21
+    target_group_arn = "arn:aws:elasticloadbalancing:ap-south-1:634441478571:targetgroup/demo-target-group/3cc40d16860b5b21"
     container_name   = "demo-app"
     container_port   = 3000
   }
