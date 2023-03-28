@@ -231,7 +231,7 @@ resource "aws_ecs_task_definition" "demo_task_definition" {
   memory                   = 512
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  task_execution_role_arn  = aws_iam_role.ecs_role.arn
+  execution_role_arn       = aws_iam_role.ecs_role.arn
 }
 
 
