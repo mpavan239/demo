@@ -88,20 +88,6 @@ resource "aws_route_table_association" "demo_public_subnet_b_rt" {
   route_table_id = aws_route_table.demo_public_rt.id
 }
 
-
-# Create an Elastic Load Balancer (ELB)
-resource "aws_lb" "demo_lb" {
-  name               = "demo-lb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.demo_sg.id]
-  subnets            = [aws_subnet.demo_sub_pub.id, aws_subnet.demo_sub_pub2.id]
-
-  tags = {
-    Name = "demo-lb"
-  }
-}
-
 # Create a target group for the ECS service to use
 resource "aws_lb_target_group" "demo_target_group" {
   name        = "demo-target-group"
@@ -121,9 +107,36 @@ resource "aws_lb_target_group" "demo_target_group" {
   }
 
 }
+# Create an Elastic Load Balancer (ELB)
+resource "aws_lb" "demo_lb" {
+  name               = "demo-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.demo_sg.id]
+  subnets            = [aws_subnet.demo_sub_pub.id, aws_subnet.demo_sub_pub2.id]
+
+  tags = {
+    Name = "demo-lb"
+  }
+}
+
+# Wait for the load balancer to be available
+resource "null_resource" "wait_for_lb" {
+  depends_on = [aws_lb.demo_lb]
+
+  provisioner "local-exec" {
+    command = "sleep 30"
+  }
+}
+
+# Print the ARN of the load balancer
+output "lb_arn" {
+  value = aws_lb.demo_lb.arn
+}
+
 # Attach the target group to the load balancer
 resource "aws_lb_listener_rule" "demo_listener_rule" {
-  listener_arn = aws_lb.demo_lb.arn
+  listener_arn = aws_lb.demo_lb.listeners.0.arn
 
   action {
     type             = "forward"
@@ -136,6 +149,7 @@ resource "aws_lb_listener_rule" "demo_listener_rule" {
     }
   }
 }
+
 
 resource "aws_iam_policy" "ecs_policy" {
   name        = "ecs_policy"
@@ -266,8 +280,8 @@ resource "aws_ecs_service" "demo_service" {
 
   network_configuration {
     security_groups = [aws_security_group.demo_sg.id]
-    subnets         = [aws_subnet.demo_sub_pvt.id, aws_subnet.demo_sub_pub.id]
-    assign_public_ip = true
+    subnets         = [aws_subnet.demo_sub_pvt.id]
+    
   }
 
   load_balancer {
