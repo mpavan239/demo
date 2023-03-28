@@ -128,10 +128,12 @@ resource "aws_iam_role" "ecs_role" {
     Name = "ecs_role"
   }
 
-  # Attach policy to the role
-  policy = aws_iam_policy.ecs_policy.arn
-}
 
+}
+resource "aws_iam_role_policy_attachment" "ecs_policy_attachment" {
+  policy_arn = aws_iam_policy.ecs_policy.arn
+  role       = aws_iam_role.ecs_role.name
+}
 
 # Create an ECS cluster
 resource "aws_ecs_cluster" "demo_cluster" {
