@@ -125,7 +125,7 @@ resource "null_resource" "wait_for_lb" {
   depends_on = [aws_lb.demo_lb]
 
   provisioner "local-exec" {
-    command = "sleep 30"
+    command = "sleep 60"
   }
 }
 
@@ -136,7 +136,7 @@ output "lb_arn" {
 
 # Attach the target group to the load balancer
 resource "aws_lb_listener_rule" "demo_listener_rule" {
-  listener_arn = aws_lb.demo_lb.listeners.0.arn
+  listener_arn = aws_lb.demo_lb.arn
 
   action {
     type             = "forward"
