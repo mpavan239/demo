@@ -76,46 +76,75 @@ resource "aws_lb_target_group" "demo_target_group" {
   }
 }
 
-# Create an ECS IAM policy
+# Create the IAM policy
 resource "aws_iam_policy" "ecs_policy" {
-  name = "ecs-policy"
+  name        = "ecs_policy"
+  description = "IAM policy for ECS task execution role"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action = [
-          "ecs:ListClusters",
-          "ecs:ListTaskDefinitions",
-          "ecs:DescribeClusters",
-          "ecs:DescribeTaskDefinition",
-          "ecs:RegisterTaskDefinition",
-          "ecs:DeregisterTaskDefinition",
-          "ecs:CreateService",
-          "ecs:UpdateService",
-          "ecs:DeleteService",
-          "ecs:ListServices",
-          "ecs:DescribeServices",
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
         Effect   = "Allow"
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetRepositoryPolicy",
+          "ecr:DescribeRepositories",
+          "ecr:ListImages",
+          "ecr:DescribeImages",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ecs:CreateCluster",
+          "ecs:DeregisterContainerInstance",
+          "ecs:DiscoverPollEndpoint",
+          "ecs:Poll",
+          "ecs:RegisterContainerInstance",
+          "ecs:StartTask",
+          "ecs:SubmitContainerStateChange",
+          "ecs:SubmitTaskStateChange"
+        ]
         Resource = "*"
       }
     ]
   })
 }
+# Create the IAM role for ECS task execution
+resource "aws_iam_role" "ecs_role" {
+  name = "ecs_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      }
+    ]
+  })
 
-# Attach ECS policy to IAM role
-resource "aws_iam_policy_attachment" "ecs_policy_attachment" {
-  name       = "ecs-policy-attachment"
+  # Attach the IAM policy to the role
+  # Note that we pass the ARN of the IAM policy to the "policy_arn" attribute, not "policy"
+  # Also note that we use "depends_on" to ensure the IAM policy is created before the role
+  depends_on = [aws_iam_policy.ecs_policy]
   policy_arn = aws_iam_policy.ecs_policy.arn
-  roles      = [aws_iam_role.ecs_role.name]
 }
 
 # Create an ECS cluster
@@ -156,7 +185,8 @@ resource "aws_ecs_task_definition" "demo_task_definition" {
   family                   = "demo-task-definition"
   container_definitions    = jsonencode([{
     name                    = "demo-app"
-    image                   = "***.dkr.ecr.ap-south-1.amazonaws.com/demo-hub"
+    image                   = "634441478571.dkr.ecr.ap-south-1.amazonaws.com/demo-app:latest"
+
     essential               = true
     portMappings = [
       {
@@ -186,7 +216,7 @@ resource "aws_ecs_service" "demo_service" {
 
   network_configuration {
     security_groups = [aws_security_group.demo_sg.id]
-    subnets         = aws_subnet.demo_*subnet.*.id
+    subnets         = aws_subnet.demo_sub*.id
     assign_public_ip = true
   }
 
